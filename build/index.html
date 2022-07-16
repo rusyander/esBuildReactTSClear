@@ -1,0 +1,32 @@
+ <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>ESBuild</title>
+           
+             <link rel="stylesheet" href=bundle.index-QVZWJAKQ.css />
+          </head>
+          <body>
+            <div id="root"></div>
+            <script src=bundle.index-Y5XU5BGP.js></script>
+
+            <script>
+                const envSource = new EventSource('http://localhost:4000/subscribe');
+                envSource.onopen = function(event) {
+                    console.log('open');
+                }
+
+                envSource.onerror = function(event) {
+                    console.log('error');
+                }
+
+                envSource.onmessage = function(event) {
+                    console.log('message');
+                    window.location.reload();
+                }
+
+            </script>
+          </body>
+        </html>

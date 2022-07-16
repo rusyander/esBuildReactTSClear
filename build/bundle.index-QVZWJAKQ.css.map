@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/second.css", "../src/index.css"],
+  "sourcesContent": [".ssss {\r\n  font-size: 40px;\r\n}\r\n", "@import \"./second.css\";\r\n* {\r\n  background-color: #e7e7e7;\r\n}\r\n.ssss {\r\n  color: green;\r\n}\r\n"],
+  "mappings": ";AAAA;AACE;AAAA;;;ACAF;AACE;AAAA;AAEF;AACE;AAAA;",
+  "names": []
+}
