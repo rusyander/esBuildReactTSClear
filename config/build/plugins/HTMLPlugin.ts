@@ -1,99 +1,93 @@
 import { Plugin } from "esbuild";
 import { rm, writeFile } from "fs/promises";
 import path from "path";
-import { Script } from "vm";
 
-interface HTMLPlaginOptions {
+interface HTMLPluginOptions {
   template?: string;
   title?: string;
   jsPath?: string[];
   cssPath?: string[];
 }
 
-const preparePath = (outputs: string[]) => {
+const renderHtml = (options: HTMLPluginOptions): string => {
+  return (
+    options.template ||
+    `
+      <!doctype html>
+      <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport"
+                    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+              <meta http-equiv="X-UA-Compatible" content="ie=edge">
+              <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.ico" />
+              <title>${options.title}</title>
+              ${options?.cssPath
+                ?.map((path) => `<link href=${path} rel="stylesheet">`)
+                .join(" ")}
+          </head>
+          <body>
+              <div id="root"></div>
+              ${options?.jsPath
+                ?.map((path) => `<script src=${path}></script>`)
+                .join(" ")}
+              <script>
+              const evtSource = new EventSource('http://localhost:3000/subscribe' || 'http://0.0.0.0:3000/subscribe');
+             evtSource.onopen = function () { console.log('open') }
+             evtSource.onerror = function () { console.log('error') }
+             evtSource.onmessage = function () { 
+                  console.log('message')
+                  window.location.reload();
+              }
+             
+             </script>
+          </body>
+      </html>
+                    `
+  );
+};
+
+const preparePaths = (outputs: string[]) => {
   return outputs.reduce<Array<string[]>>(
-    (acc: any, path: any) => {
+    (acc, path) => {
       const [js, css] = acc;
       const splittedFileName = path.split("/").pop();
+
       if (splittedFileName?.endsWith(".js")) {
         js.push(splittedFileName);
       } else if (splittedFileName?.endsWith(".css")) {
         css.push(splittedFileName);
       }
+
       return acc;
     },
     [[], []]
   );
 };
 
-const renderHTML = (options: HTMLPlaginOptions): string => {
-  return (
-    options.template ||
-    ` <!DOCTYPE html>
-        <html lang="en">
-          <head>
-            <meta charset="UTF-8" />
-            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>${options.title}</title>
-           
-            ${options?.cssPath
-              ?.map((path) => ` <link rel="stylesheet" href=${path} />`)
-              .join(" ")}
-          </head>
-          <body>
-            <div id="root"></div>
-            ${options?.jsPath
-              ?.map((path) => `<script src=${path}></script>`)
-              .join(" ")}
-
-            <script>
-                const envSource = new EventSource('http://localhost:4000/subscribe');
-                envSource.onopen = function(event) {
-                    console.log('open');
-                }
-
-                envSource.onerror = function(event) {
-                    console.log('error');
-                }
-
-                envSource.onmessage = function(event) {
-                    console.log('message');
-                    window.location.reload();
-                }
-
-            </script>
-          </body>
-        </html>`
-  );
-};
-
-export const HTMLPlugin = (options: HTMLPlaginOptions): Plugin => {
+export const HTMLPlugin = (options: HTMLPluginOptions): Plugin => {
   return {
     name: "HTMLPlugin",
-
     setup(build) {
       const outdir = build.initialOptions.outdir;
+
       build.onStart(async () => {
         try {
           if (outdir) {
-            // проверить путь на существование и права доступа к папке билда
-            await rm(outdir, { recursive: true }).catch(() => {});
-            // console.log(outdir);
+            await rm(outdir, { recursive: true });
           }
         } catch (e) {
-          console.error("Не удалось очистить папку build");
+          console.log("Не удалось очистить папку");
         }
       });
-
       build.onEnd(async (result) => {
         const outputs = result.metafile?.outputs;
-        const [jsPath, cssPath] = preparePath(Object.keys(outputs || {}));
+        const [jsPath, cssPath] = preparePaths(Object.keys(outputs || {}));
 
         if (outdir) {
           await writeFile(
             path.resolve(outdir, "index.html"),
-            renderHTML({ jsPath, cssPath, ...options })
+            renderHtml({ jsPath, cssPath, ...options })
           );
         }
       });

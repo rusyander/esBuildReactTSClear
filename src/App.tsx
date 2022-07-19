@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+// ignore-next-line
 import Logo from "./logo.png";
 import LogoAA from "./logoAA.svg";
 

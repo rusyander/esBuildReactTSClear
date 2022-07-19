@@ -1,14 +1,14 @@
 import ESBuild, { BuildOptions } from "esbuild";
 import path from "path";
-import { ClearPlugin } from "./plugins/ClearPlugin";
+import { CleanPlugin } from "./plugins/CleanPlugin";
 import { HTMLPlugin } from "./plugins/HTMLPlugin";
 
-const mode: any = process.env.MODE || "development";
+const mode = process.env.MODE || "development";
 
 const isDev = mode === "development";
 const isProd = mode === "production";
 
-function resolveRoot(...segments: any[]) {
+function resolveRoot(...segments: string[]) {
   return path.resolve(__dirname, "..", "..", ...segments);
 }
 
@@ -18,12 +18,30 @@ const config: BuildOptions = {
   entryNames: "[dir]/bundle.[name]-[hash]",
   allowOverwrite: true,
   bundle: true,
+  tsconfig: resolveRoot("tsconfig.json"),
   minify: isProd,
   sourcemap: isDev,
   metafile: true,
-  tsconfig: resolveRoot("tsconfig.json"),
-  loader: { ".png": "file", ".svg": "file", ".jpg": "file" },
-  plugins: [ClearPlugin, HTMLPlugin({ title: "ESBuild" })],
+  loader: {
+    ".png": "file",
+    ".svg": "file",
+    ".jpg": "file",
+    ".json": "file",
+    ".eot": "file",
+    ".woff": "file",
+    ".ttf": "file",
+    ".eot?80hnzs": "file",
+    ".eot?80hnzs#iefix": "file",
+    ".woff?80hnzs": "file",
+    ".ttf?80hnzs": "file",
+    ".ico": "file",
+  },
+  plugins: [
+    CleanPlugin,
+    HTMLPlugin({
+      title: "Ulbi tv",
+    }),
+  ],
 };
 
 export default config;
